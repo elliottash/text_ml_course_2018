@@ -6,6 +6,7 @@ Created on Mon Aug  6 21:43:57 2018
 @author: elliott
 """
 
+#setup
 # set this to your working directory
 WORKING_DIR = '/home/elliott/Dropbox/_Ash_Teaching/2018-09 - Bocconi - Text Data and ML/code'
 import os
@@ -50,7 +51,9 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from utils import get_docfreqs
 
-f = get_docfreqs(df1['snippet']) # makes python dictionary
+# generate document counts for each word
+f = get_docfreqs(df1['snippet']) 
+# generate word cloud of words with highest counts
 wordcloud = WordCloud().generate_from_frequencies(f) 
 
 plt.imshow(wordcloud, interpolation='bilinear') 
@@ -58,9 +61,8 @@ plt.axis("off")
 plt.show()
 
 #####
-# POS tagging in Python
+# POS tagging 
 #####
-
 text = 'Science cannot solve the ultimate mystery of nature. And that is because, in the last analysis, we ourselves are a part of the mystery that we are trying to solve.'
 
 from nltk.tag import perceptron
@@ -72,6 +74,7 @@ tagged_sentence
 
 #####
 # Our first visualization
+# Plot nouns and adjectives over time
 #####
 from collections import Counter
 from nltk import word_tokenize
@@ -86,16 +89,13 @@ dfs = df1.sample(frac=.1)
 dfs['nouns'], dfs['adj'] = zip(*dfs['snippet'].map(get_nouns_adj))
 dfs.groupby('year')[['nouns','adj']].mean().plot()
 
-
-
-##########
 # Sentiment Analysis
-#####
-
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 sid = SentimentIntensityAnalyzer()
 polarity = sid.polarity_scores(text)
+polarity
 
+# plot sentiment over time
 def get_sentiment(snippet):
     return sid.polarity_scores(snippet)['compound']
 dfs['sentiment'] = dfs['snippet'].apply(get_sentiment)
@@ -104,21 +104,22 @@ dfs.groupby('year')[['sentiment']].mean().plot()
 ##########
 # N-grams
 #####
-
 from nltk import ngrams
 grams = []
-for n in range(2,4):
-    grams += list(ngrams(tokens,n))
+for i, row in df1.iterrows():
+    for n in range(2,4):
+        grams += list(ngrams(row['snippet'].lower().split(),n))
+    if i == 10:
+        break
 Counter(grams).most_common()[:8]  
 
 ###
 # Collocations: Point-Wise Mutual Information
 ###
-
 from operator import mul
 from functools import reduce
 from nltk.stem import SnowballStemmer
-stemmer = SnowballStemmer()
+stemmer = SnowballStemmer('english')
 
 def get_gmean(phrase, termfreqs):
     words = phrase.split('_')
@@ -126,6 +127,8 @@ def get_gmean(phrase, termfreqs):
     p = [termfreqs[w]**(1/n) for w in words]
     numerator = termfreqs[phrase]   
     denominator = reduce(mul, p)
+    if denominator == 0:
+        return 0
     gmean = numerator / denominator
     return gmean
 
@@ -133,7 +136,6 @@ def get_gmean(phrase, termfreqs):
 ###
 # POS-filtered N-grams
 ###
-
 # Normalize Penn tags
 tagdict = { 'NN':'N',
             'NNS':'N',
@@ -164,11 +166,13 @@ tagdict = { 'NN':'N',
             'CC': 'C'}
 
 tagpatterns = {'A','N','V','P','C','D',
-           'AN','NN', 'VN', 'VV', 'NV',
+           'AN','NN', 'VN', 'VV', 
+            #'NV',
             'VP',                                    
             'NNN','AAN','ANN','NAN','NPN',
             'VAN','VNN', 'AVN', 'VVN',
-            'VPN','ANV','NVV','VDN', 'VVV', 'NNV',
+            'VPN', 'VDN', 
+            #'ANV','NVV','VVV', 'NNV',
             'VVP','VAV','VVN',
             'NCN','VCV', 'ACA',  
             'PAN',
@@ -177,42 +181,50 @@ tagpatterns = {'A','N','V','P','C','D',
             'PDAN', 'PNPN',
             'VDNN', 'VDAN','VVDN'}
 
-max_phrase_length = 3
+max_phrase_length = 4
 
 termfreqs = Counter()
 
-from nltk import sent_tokenize
-sentences = sent_tokenize(text)
-for sentence in sentences:    
-    # split into words and get POS tags
-    tagwords = []
-    for (word,tag) in tagger.tag(sentence):
-        if tag in tagdict:
-            normtag = tagdict[tag]
-            stemmed = stemmer.stem(word)
-            tagwords.append((stemmed,normtag))
-        else:
-            tagwords.append(None)
-    for n in range(1,max_phrase_length+1):            
-        rawgrams = ngrams(tagwords,n)
-        for rawgram in rawgrams:
-            # skip grams that have rare words
-            if None in rawgram:
-                continue
-            gramtags = ''.join([x[1][0] for x in rawgram])
-            if gramtags in tagpatterns:
-                 # if tag sequence is allowed, add to counter
-                gram = '_'.join([x[0] for x in rawgram])
-                termfreqs[gram] += 1
-                                
-###
-# Dependency Parsing
-###
+docs = pd.read_pickle('processed_corpus.pkl')
 
+for i, doc in enumerate(docs.values()):
+    if i > 2000:
+        break
+    for sentence in doc:    
+        # split into words and get POS tags
+        tagwords = []
+        for (word,tag) in tagger.tag(sentence):
+            if tag in tagdict:
+                normtag = tagdict[tag]
+                stemmed = word#stemmer.stem(word)
+                tagwords.append((stemmed,normtag))
+            else:
+                tagwords.append(None)
+        for n in range(1,max_phrase_length+1):            
+            rawgrams = ngrams(tagwords,n)
+            for rawgram in rawgrams:
+                # skip grams that have rare words
+                if None in rawgram:
+                    continue
+                gramtags = ''.join([x[1][0] for x in rawgram])
+                if gramtags in tagpatterns:
+                     # if tag sequence is allowed, add to counter
+                    gram = '_'.join([x[0] for x in rawgram])
+                    termfreqs[gram] += 1
+
+# filter out unigrams
+grams = [x for x in termfreqs.most_common() if '_' in x[0]]
+# make dataframe of geometric mean associations for each gram
+gmeans = pd.DataFrame([(gram[0], get_gmean(gram[0],termfreqs)) for gram in grams],
+              columns=['ngram','gmean'])
+gmeans
+                        
+# Dependency Parsing
 import spacy
 nlp = spacy.load('en')
 doc = nlp(text)
 for sent in doc.sents:
+    print(sent)
     print(sent.root)
     print([(w, w.dep_) for w in sent.root.children])
     print()
