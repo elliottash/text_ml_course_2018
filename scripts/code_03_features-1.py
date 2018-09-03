@@ -7,11 +7,15 @@ August 2017
 
 @author: Elliott Ash
 """
-# set this to your working directory
-WORKING_DIR = '/home/elliott/Dropbox/_Ash_Teaching/2018-09 - Bocconi - Text Data and ML/code'
-import os
-os.chdir(WORKING_DIR)
+
 import pandas as pd
+import os
+
+# set this to your working directory
+PATH = '/Users/malkaguillot/Documents/GitHub/text_ml_course_2018'
+
+WORKING_DIR = os.path.join(PATH,'data')
+os.chdir(WORKING_DIR) # set working directory 
 df1 = pd.read_csv('death-penalty-cases.csv')
 
 text = "Prof. Milano hailed from Milano. She got 3 M.A.'s from Bocconi."
@@ -42,9 +46,13 @@ text_lower = text.lower() # go to lower-case
 
 # recipe for fast punctuation removal
 from string import punctuation
-translator = str.maketrans('','',punctuation) 
-text_nopunc = text_lower.translate(translator)
-print(text_nopunc)
+import sys
+if (sys.version)[0]=='3':
+    translator = str.maketrans('','',punctuation)
+    text_nopunc = text_lower.translate(translator)
+if (sys.version)[0]=='2':
+    text_nopunc = text_lower.translate(None, punctuation)
+print(text_nopunc) 
 
 #####
 # Tokens

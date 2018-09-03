@@ -67,6 +67,8 @@ text = 'Science cannot solve the ultimate mystery of nature. And that is because
 
 from nltk.tag import perceptron
 from nltk import word_tokenize
+import nltk
+nltk.download('averaged_perceptron_tagger')
 tagger = perceptron.PerceptronTagger()
 tokens = word_tokenize(text)
 tagged_sentence = tagger.tag(tokens)

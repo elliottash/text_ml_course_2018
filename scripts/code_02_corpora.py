@@ -8,8 +8,9 @@ August 2017
 @author: Elliott Ash
 """
 # set this to your working directory
-WORKING_DIR = '/home/elliott/Dropbox/_Ash_Teaching/2018-09 - Bocconi - Text Data and ML/code'
+PATH = '/Users/malkaguillot/Downloads/text_ml_course_2018-master'
 import os
+WORKING_DIR = os.path.join(PATH,'data')
 os.chdir(WORKING_DIR) # set working directory 
 
 # Pandas Data-frames
@@ -29,12 +30,14 @@ df1[['year','citeCount']].hist()
 # Iterating over documents in a dataframe
 ###################################
 
+WORKING_DIR = os.path.join(PATH,'scripts')
+os.chdir(WORKING_DIR) # set working directory 
 from utils import process_document
 
 processed = {} # empty python dictionary for processed data
 # iterate over rows
 for i, row in df1.iterrows():
-    docid = row['cluster_id'] # get document identifier
+    docid = row['court_id'] # get document identifier
     text = row['snippet']     # get text snippet
     document = process_document(text) # get sentences/tokens
     processed[docid] = document # add to dictionary    
