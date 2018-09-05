@@ -44,7 +44,7 @@ pca.n_components_
 Xrestore = pca.inverse_transform(X95)
 plt.plot(Xrestore[0],X[0],'ro')
 #%% Incremental PCA
-X_mm = np.memmap('X.pkl',shape=(32567, 525))
+X_mm = np.memmap('X.pkl',shape=(32567, 472))
 
 from sklearn.decomposition import IncrementalPCA
 inc_pca = IncrementalPCA(n_components=100, batch_size=1000)

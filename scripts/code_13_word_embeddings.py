@@ -32,6 +32,7 @@ def fix_snippet(txt):
 df1['snippet'] = df1['snippet'].apply(fix_snippet)
 df1['snippet'] = df1['snippet'].apply(fix_snippet)
 df1.to_csv('cases-processed.csv')
+df1['author_id'] = df1['author_id'].astype(str)
 
 ###
 # Entity Embeddings
@@ -40,7 +41,7 @@ df1.to_csv('cases-processed.csv')
 # make judge dummy variables
 from sklearn.preprocessing import LabelEncoder
 encoder = LabelEncoder()
-J = encoder.fit_transform(df1['author_id'].astype(str))
+J = encoder.fit_transform(df1['author_id'])
 num_judges = max(J)+1
 Y = df1['citeCount'] > 0
 Y2 = np.log(1+df1['citeCount'])
@@ -200,7 +201,6 @@ apple.similarity(apple)
 orange = en('orange')
 apple.similarity(orange)
 
-import spacy
 it = spacy.load('it')
 mela = it('mela')
 arancia = it('arancia')
