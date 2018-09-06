@@ -18,9 +18,9 @@ df1 = pd.read_csv('death-penalty-cases.csv')
 Y = df1['citeCount'] > 0
 num_features = X.shape[1]
 
+# Set up the basic model
 from keras.models import Sequential
 from keras.layers import Activation, Dense
-
 model = Sequential()
 model.add(Dense(64, input_dim=num_features, activation='relu')) 
 
@@ -50,7 +50,8 @@ model.add(Dense(64,
 from keras.layers import Dropout
 model.add(Dropout(0.5))
 
-model.add(Dense(1))
+# output layer
+model.add(Dense(1,activation='sigmoid'))
 
 # Optimizers
 model.compile(optimizer='adam',
@@ -67,10 +68,9 @@ earlystop = EarlyStopping(monitor='val_acc',
                           min_delta=0.0001, 
                           patience=5, 
                           mode='auto')
-callbacks_list = [earlystop]
 model.fit(X, Y, batch_size=128, 
            epochs=100, 
-           callbacks=callbacks_list, 
+           callbacks=[earlystop], 
            validation_split=0.2)
 
 # Batch Training with Large Data
@@ -78,8 +78,7 @@ from numpy import memmap
 X_mm = memmap('X.pkl',shape=(32567, 472))
 
 model.fit(X_mm, Y, batch_size=128, 
-           epochs=100, 
-           callbacks=callbacks_list, 
+           epochs=3, 
            validation_split=0.2)
 
 # Grid search with KerasClassifier
@@ -89,7 +88,8 @@ from sklearn.model_selection import GridSearchCV
 # instantiate KerasClassifier with build function
 def create_model(hidden_layers=1):  
     model = Sequential()
-    model.add(Dense(16, input_dim=num_features, activation='relu')) 
+    model.add(Dense(16, input_dim=num_features, 
+                    activation='relu')) 
     for i in range(hidden_layers):
         model.add(Dense(8, activation='relu'))
     model.add(Dense(1, activation='sigmoid'))

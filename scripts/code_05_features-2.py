@@ -95,11 +95,15 @@ sid = SentimentIntensityAnalyzer()
 polarity = sid.polarity_scores(text)
 polarity
 
-# plot sentiment over time
+# show higest and lowest sentiment snippets
 def get_sentiment(snippet):
     return sid.polarity_scores(snippet)['compound']
 dfs['sentiment'] = dfs['snippet'].apply(get_sentiment)
-dfs.groupby('year')[['sentiment']].mean().plot()
+dfs.sort_values('sentiment',inplace=True)
+list(dfs[:2]['snippet'])
+
+list(dfs[-2:]['snippet'])
+
 
 ##########
 # N-grams
