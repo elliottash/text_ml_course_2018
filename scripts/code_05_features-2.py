@@ -89,6 +89,27 @@ dfs = df1.sample(frac=.1)
 dfs['nouns'], dfs['adj'] = zip(*dfs['snippet'].map(get_nouns_adj))
 dfs.groupby('year')[['nouns','adj']].mean().plot()
 
+
+# Get list of nouns, adjectives, and verbs from WordNet
+from nltk import wordnet as wn
+from nltk.corpus import stopwords
+stop = set(stopwords.words('english'))
+stop.add('well')
+
+full_vocab = set()
+
+for x in wn.wordnet.all_synsets('a'):
+    full_vocab.add(x.lemma_names()[0].lower())
+for x in wn.wordnet.all_synsets('n'):
+    full_vocab.add(x.lemma_names()[0].lower())
+for x in wn.wordnet.all_synsets('v'):
+    full_vocab.add(x.lemma_names()[0].lower())
+
+full_vocab = full_vocab - stop
+
+pd.to_pickle(full_vocab,'full_vocab.pkl')
+
+
 # Sentiment Analysis
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 sid = SentimentIntensityAnalyzer()
