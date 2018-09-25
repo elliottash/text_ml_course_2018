@@ -1,7 +1,9 @@
 # text_ml_course_2018
-Slides and jupter notebooks for course on text analysis and machine learning for social science.
+Text Data and Machine Learning for Social Science
 
-/slides: contains the handout version of the slides (I will bring printouts for everyone)
+This repo includes slides and jupter notebooks for an introductory course on text analysis and machine learning, with a focus on social science applications.
+
+/slides: contains the handout version of the slides
 
 /notebooks: contains the Jupyter notebooks used for instruction and examples.
 
