@@ -10,3 +10,5 @@ This repo includes slides and jupter notebooks for an introductory course on tex
 /scripts: contains runnable Python script versions of the notebooks
 
 /data: includes the "death-penalty-cases.csv" data set, in case you would like to replicate the scripts or notebooks. The scripts and notebooks need to be run in the directory where this file is saved.
+
+Materials for more advanced course at https://github.com/elliottash/legal_dna_2021
