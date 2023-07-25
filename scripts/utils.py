@@ -6,19 +6,30 @@ Created on Sat Jul 29 19:31:10 2017
 @author: elliott
 """
 
+import string
+import sys
+import unidecode
+
 from nltk.stem import SnowballStemmer
 from nltk import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 stop = set(stopwords.words('english'))
 from collections import Counter
-import string
-translator = str.maketrans('','',string.punctuation) 
+# Depending on the version of Python
+if (sys.version)[0]=='2':
+    translator = None, string.punctuation
+if (sys.version)[0]=='3':
+    translator = str.maketrans('','',string.punctuation) 
+    
 stemmer = SnowballStemmer('english')
 
 newstop = ['death','penalty','would']
 
 def clean_document(doc):
-    doc = doc.translate(translator)
+    if (sys.version)[0]=='2':
+        doc = doc.translate(None, string.punctuation)
+    if (sys.version)[0]=='3':
+        doc = doc.translate(translator)    
     doc = [i for i in doc.lower().split() if i not in stop and len(i) < 10]
     doc = [stemmer.stem(t) for t in doc if t not in newstop]
     return doc
@@ -32,7 +43,11 @@ def clean_german(doc):
     return doc
 
 def process_document(text):    
-    rawsents = sent_tokenize(text)    
+    #Emcompasses the different encoding (ascii in Mac?)
+    try: 
+        rawsents = sent_tokenize(text)    
+    except:
+        rawsents = sent_tokenize(text.decode('utf-8'))    
     sentences = [word_tokenize(s) for s in rawsents]    
     return sentences
 
@@ -49,7 +64,10 @@ def get_docfreqs(documents):
     docfreqs = Counter()
     for doc in documents:
         proc = doc.lower()
-        proc = proc.translate(translator)
+        if (sys.version)[0]=='2':
+            proc = proc.translate(None, string.punctuation)
+        if (sys.version)[0]=='3':
+            proc = proc.translate(translator)
         tokens = proc.split()
         tokens = [x for x in set(tokens) if x not in stop]
         docfreqs.update(tokens)
